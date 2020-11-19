@@ -74,6 +74,19 @@ resource "aws_security_group_rule" "runner_ping" {
   )
 }
 
+# Allow incoming traffic for the session server to gitlab-runner agent instances
+resource "aws_security_group_rule" "runner_session_server" {
+  count = length(var.session_server) > 0 ? 1 : 0
+
+  type      = "ingress"
+  from_port = var.session_server["port"]
+  to_port   = var.session_server["port"]
+  protocol  = "tcp"
+
+  cidr_blocks       = var.session_server["incoming_cidr_blocks"]
+  security_group_id = aws_security_group.runner.id
+}
+
 ########################################
 ## Security group IDs to runner agent ##
 ########################################
@@ -95,6 +108,19 @@ resource "aws_security_group_rule" "runner_ssh_group" {
     element(var.gitlab_runner_security_group_ids, count.index),
     aws_security_group.runner.name
   )
+}
+
+# Allow incoming traffic for the session server from allowed security groups to gitlab-runner agent instances
+resource "aws_security_group_rule" "runner_session_server_group" {
+  count = length(var.session_server) > 0 && var.session_server["listener_arn"] != "" ? 1 : 0
+
+  type      = "ingress"
+  from_port = var.session_server["port"]
+  to_port   = var.session_server["port"]
+  protocol  = "tcp"
+
+  source_security_group_id = var.session_server["alb_security_group_id"]
+  security_group_id        = aws_security_group.runner.id
 }
 
 # Allow ICMP traffic from allowed security group IDs to gitlab-runner agent instances

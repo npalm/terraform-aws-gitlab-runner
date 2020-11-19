@@ -1,6 +1,8 @@
 concurrent = ${runners_concurrent}
 check_interval = 0
 
+${session_server_string}
+
 [[runners]]
   name = "${runners_name}"
   url = "${gitlab_url}"
@@ -63,4 +65,5 @@ check_interval = 0
     ${runners_off_peak_idle_count}
     ${runners_off_peak_idle_time}
     ${runners_off_peak_periods_string}
-  ${runners_machine_autoscaling}
+
+${runners_machine_autoscaling}

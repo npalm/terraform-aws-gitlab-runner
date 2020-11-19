@@ -5,6 +5,17 @@ locals {
     join(",", formatlist("%q", var.docker_machine_options)),
   )
 
+  // convert the options for the session server
+  session_server_string = var.session_server == null ? "" : join("",
+    formatlist("%s", [
+      "[session_server]\n",
+      format("listen_address = \"%s:%d\"\n", var.session_server.listen_address, var.session_server.port),
+      format("advertise_address = \"%q:%d\"\n", var.session_server.advertise_address, var.session_server.port),
+      format("session_timeout = %s\n", var.session_server.timeout)
+      ]
+    )
+  )
+
   // Ensure max builds is optional
   runners_max_builds_string = var.runners_max_builds == 0 ? "" : format("MaxBuilds = %d", var.runners_max_builds)
 

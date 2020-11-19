@@ -592,6 +592,12 @@ variable "enable_kms" {
   default     = false
 }
 
+variable "kms_alias_name" {
+  description = "Alias added to the kms_key (if created and not provided by kms_key_id)"
+  type        = string
+  default     = ""
+}
+
 variable "kms_deletion_window_in_days" {
   description = "Key rotation window, set to 0 for no rotation. Only used when `enable_kms` is set to `true`."
   type        = number
@@ -630,6 +636,29 @@ variable "log_group_name" {
 
 variable "runner_iam_policy_arns" {
   type        = list(string)
-  description = "List of policy ARNs to be added to the instance profile of the runners."
+  description = "List of policy ARNs to be added to the instance profile of the gitlab runner agent ec2 instance."
   default     = []
+}
+
+variable "session_server" {
+  description = "Enables the session server support."
+  type        = object({
+  timeout = number
+  port = number
+  listen_address = string
+  advertise_address = string
+  listener_arn = string
+  alb_security_group_id = string
+  incoming_cidr_blocks = list(string)
+  }
+  )
+
+  default = null
+  # session_timeout       - Time in seconds how long the session stays active after the job completes. (1800)
+  # port                  - Port which is used to connect to the session server. Don't forget to expose this port if you use the docker runner image. (8093)
+  # listen_address        - Listen address of the session server, e.g. [::] without a port. Session_server_port is used for the port.
+  # advertise_address     - The URL exposed to Gitlab used to access the session server, e.g. runner-host-name.tld. session_server_port is used for the port.
+  # listener_arn          - ALB listener ARN to connect the session server to the outside. An EIP can be used instead (see enable_eip).
+  # alb_security_group_id - ID of the security group belonging to the ALB to restrict the traffic to the session_server.
+  # incoming_cidr_blocks  - CIDR blocks which are allowed to connect to the session server.
 }
