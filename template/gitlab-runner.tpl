@@ -1,9 +1,5 @@
 mkdir -p /etc/gitlab-runner
-cat > /etc/gitlab-runner/config.toml <<- EOF
-
-${runners_config}
-
-EOF
+aws s3 cp "${runners_config_s3_uri}" "/etc/gitlab-runner/config.toml"
 
 ${pre_install}
 
@@ -85,8 +81,11 @@ start() {
     touch \$lockfile
 }
 
+# Remove all running docker-machine instances
 # Overwrite token in SSM with null and remove runner from Gitlab
 stop() {
+    logger "Removing Docker Machine Instances"
+    for runner in $(docker-machine ls | awk '{print $1}' | grep runner); do docker-machine rm -y "$runner"; done
     logger "Removing Gitlab Runner Token"
     aws ssm put-parameter --overwrite --type SecureString  --name "${secure_parameter_store_runner_token_key}" --region "${secure_parameter_store_region}" --value="null" 2>&1 | logger &
     curl -sS --request DELETE "${runners_gitlab_url}/api/v4/runners" --form "token=$token" 2>&1 | logger &
