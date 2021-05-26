@@ -72,7 +72,7 @@ resource "aws_s3_bucket_public_access_block" "build_cache_policy" {
   restrict_public_buckets = true
   ignore_public_acls      = true
 
-  depends_on = ["aws_s3_bucket.build_cache"]
+  depends_on = [aws_s3_bucket.build_cache]
 }
 
 resource "aws_iam_policy" "docker_machine_cache" {
@@ -89,5 +89,5 @@ resource "aws_iam_policy" "docker_machine_cache" {
     }
   )
 
-  depends_on = ["aws_s3_bucket_public_access_block.build_cache_policy"]
+  depends_on = [aws_s3_bucket_public_access_block.build_cache_policy]
 }
